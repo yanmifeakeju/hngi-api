@@ -34,6 +34,36 @@ router
     } catch (error) {
       res.status(500).send();
     }
+  })
+  .patch('/subscription/:id', async (req, res) => {
+    try {
+      const subscription = await Subscription.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      if (!subscription) {
+        return res.status(404).send();
+      }
+      res.send(subscription);
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  })
+  .delete('/subscription/:id', async (req, res) => {
+    try {
+      const subscription = await Subscription.findByIdAndDelete(req.params.id);
+      if (!subscription) {
+        return res.status(404).send();
+      }
+      res.send(subscription);
+    } catch (error) {
+      res.status(500).send();
+    }
   });
 
 module.exports = router;
