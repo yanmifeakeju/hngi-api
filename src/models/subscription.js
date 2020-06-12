@@ -24,11 +24,9 @@ const Subscription = mongoose.model('Subscription', {
     type: String,
     default: function () {
       const date = new Date().getFullYear() + 1;
-      console.log(date);
       let newDate = new Date(date.toString());
 
       newDate = newDate.getFullYear();
-      console.log(newDate);
       return newDate;
     },
   },

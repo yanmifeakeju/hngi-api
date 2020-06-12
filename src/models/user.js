@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 require('../db/moongose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
-const User = mongoose.model('User', {
+const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: {
     type: String,
+    unique: true,
     required: true,
     trim: true,
     lowercase: true,
@@ -32,22 +34,38 @@ const User = mongoose.model('User', {
   },
 });
 
-// const user = {
-//   name: 'Akeju',
-//   email: 'yanmifeakeju@gmail.con',
-//   password: 'firstinits',
-// };
+userSchema.statics.findByCredentials = async (email, password) => {
+  const user = await User.findOne({ email });
 
-// const addNewUser = async (userInfo) => {
-//   const user = new User(userInfo);
-//   try {
-//     await user.save();
-//     console.log(user);
-//   } catch (error) {
-//     console.log(error);
+  if (!user) {
+    throw new Error('Unable to login');
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    throw new Error('Unable to login');
+  }
+  return user;
+};
+
+userSchema.pre('save', async function (next) {
+  const user = this;
+
+  if (user.isModified('password')) {
+    user.password = await bcrypt.hash(user.password, 8);
+  }
+  next();
+});
+
+// userSchema.pre('save', async function (next) {
+//   const user = this;
+//   if (user.isModified('password')) {
+//     user.password = await bcrypt.hash(user.password, 8);
 //   }
-// };
+//   next();
+// });
 
-// addNewUser(user);
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;
