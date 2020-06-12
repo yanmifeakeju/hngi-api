@@ -38,15 +38,15 @@ const User = mongoose.model('User', {
 //   password: 'firstinits',
 // };
 
-const addNewUser = async (userInfo) => {
-  const user = new User(userInfo);
-  try {
-    await user.save();
-    console.log(user);
-  } catch (error) {
-    console.log(error);
-  }
-};
+// const addNewUser = async (userInfo) => {
+//   const user = new User(userInfo);
+//   try {
+//     await user.save();
+//     console.log(user);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 // addNewUser(user);
 
