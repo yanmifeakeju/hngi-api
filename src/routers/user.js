@@ -1,6 +1,7 @@
 require('../db/moongose');
 const User = require('../models/user');
 const express = require('express');
+const auth = require('../middleware/auth');
 const router = new express.Router();
 
 router
@@ -26,29 +27,32 @@ router
       res.status(400).send({ error: 'unable to login' });
     }
   })
-  .get('/users', async (req, res) => {
+  .post('/users/logout', auth, async (req, res) => {
     try {
-      const users = await User.find({});
-      res.send(users);
-    } catch (error) {
-      res.status(500).send(error);
-    }
-  })
-  .get('/users/:id', async (req, res) => {
-    const _id = req.params.id;
+      req.user.tokens = req.user.tokens.filter(
+        (token) => token.token !== req.token
+      );
 
-    try {
-      const user = await User.findById(_id);
-      if (!user) {
-        res.status(404).send({ message: 'User does not exist' });
-        return;
-      }
-      res.send(user);
+      await req.user.save();
+
+      res.send();
     } catch (error) {
       res.status(500).send();
     }
   })
-  .patch('/users/:id', async (req, res) => {
+  .post('/users/logoutall', auth, async (req, res) => {
+    try {
+      req.user.tokens = [];
+      await req.user.save();
+      res.send();
+    } catch (error) {
+      res.status(500).send();
+    }
+  })
+  .get('/users/me', auth, async (req, res) => {
+    res.send(req.user);
+  })
+  .patch('/users/me', auth, async (req, res) => {
     const updates = Object.keys(req.body);
     const allowedUpdates = ['name', 'email', 'password'];
     const isValidOperation = updates.every((update) =>
@@ -60,27 +64,22 @@ router
     }
 
     try {
-      const user = await User.findById(req.params.id);
-      updates.forEach((update) => (user[update] = req.body[update]));
-
-      await user.save();
-
-      if (!user) {
-        return res.status(404).send();
-      }
-      res.send(user);
+      updates.forEach((update) => (req.user[update] = req.body[update]));
+      await req.user.save();
+      res.send(req.user);
     } catch (error) {
       res.status(400).send({ error: 'request failed' });
     }
   })
-  .delete('/users/:id', async (req, res) => {
+  .delete('/users/me', auth, async (req, res) => {
     try {
-      const user = await User.findByIdAndDelete(req.params.id);
+      // const user = await User.findByIdAndDelete(req.user._id);
 
-      if (!user) {
-        return res.status(400).send();
-      }
-      res.send(user);
+      // if (!user) {
+      //   return res.status(400).send();
+      // }
+      await req.user.remove();
+      res.send(req.user);
     } catch (error) {
       res.status(500).send(error);
     }

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 require('../db/moongose');
+const Task = require('../models/subscription');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -43,6 +44,19 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
+userSchema.virtual('subs', {
+  ref: 'Subscription',
+  localField: '_id',
+  foreignField: 'owner',
+});
+
+// userSchema.methods.toJSON = async function () {
+//   const user = this;
+//   const userObject = user.toObject();
+
+//   return userObject;
+// };
+
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, 'hngapi');
@@ -73,6 +87,15 @@ userSchema.pre('save', async function (next) {
     user.password = await bcrypt.hash(user.password, 8);
   }
   next();
+});
+
+//
+userSchema.pre('remove', async function (next) {
+  const user = this;
+
+  Task.deleteOne({ owner: user._id });
+
+  next;
 });
 
 // userSchema.pre('save', async function (next) {

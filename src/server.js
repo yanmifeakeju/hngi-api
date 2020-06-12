@@ -9,18 +9,23 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 
 app.use('/v1', userRouter);
-app.use(subscriptionRouter);
+app.use('/v1', subscriptionRouter);
 
 app.listen(port, () => {
   console.log(`Server is listening on ${port}`);
 });
 
-// const bcrypt = require('bcryptjs');
+const Subscription = require('./models/subscription');
+const User = require('./models/user');
 
-// const func = async () => {
-//   const password = 'red1222';
-//   const hashedPassword = await bcrypt.hash(password, 8);
-//   console.log(hashedPassword);
-// };
+const main = async () => {
+  // const subscription = await Subscription.findById('5ee39f4047e7f55350eeadc2');
+  // await subscription.populate('owner').execPopulate();
+  // console.log(subscription.owner);
+  const user = await User.findById('5ee39e3879dd7b1c4c313d97');
+  await user.populate('subs').execPopulate();
 
-// func();
+  console.log(user.subs);
+};
+
+main();

@@ -30,6 +30,11 @@ const Subscription = mongoose.model('Subscription', {
       return newDate;
     },
   },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'User',
+  },
 });
 
 // const subscribe = { plan: 'Standard' };
