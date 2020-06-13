@@ -9,6 +9,10 @@ const port = process.env.PORT;
 
 app.use(express.json());
 
+app.post('/', (req, res) => {
+  res.send('Hello World');
+});
+
 app.use('/v1', userRouter);
 app.use('/v1', subscriptionRouter);
 
