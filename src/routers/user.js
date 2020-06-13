@@ -2,6 +2,8 @@ require('../db/moongose');
 const User = require('../models/user');
 const express = require('express');
 const auth = require('../middleware/auth');
+const { sendWelcomeEmail } = require('../emails/account');
+const { sendCancelationEmail } = require('../emails/account');
 const router = new express.Router();
 
 router
@@ -9,6 +11,7 @@ router
     const user = new User(req.body);
     try {
       await user.save();
+      sendWelcomeEmail(user.email, user.name);
       const token = await user.generateAuthToken();
       res.status(201).send({ user, token });
     } catch (error) {
@@ -79,6 +82,7 @@ router
       //   return res.status(400).send();
       // }
       await req.user.remove();
+      sendCancelationEmail(req.user.email, req.user.name);
       res.send(req.user);
     } catch (error) {
       res.status(500).send(error);
